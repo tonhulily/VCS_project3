@@ -37,6 +37,6 @@ class InstallReceiver : BroadcastReceiver() {
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .build()
 
-        manager.notify(1, notification)
+        manager.notify(System.currentTimeMillis().toInt(), notification)
     }
 }

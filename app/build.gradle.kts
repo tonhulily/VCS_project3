@@ -5,11 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.vcs_project3"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.vcs_project3"
