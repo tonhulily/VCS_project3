@@ -121,10 +121,12 @@ class ForegroundService : Service() {
     private fun showInstallNotification(packageName: String) {
         val manager =
             getSystemService(NotificationManager::class.java)
+        val appInfo = packageManager.getApplicationInfo(packageName, 0)
+        val appName = packageManager.getApplicationLabel(appInfo).toString()
 
         val notification = NotificationCompat.Builder(this, "install_channel")
             .setContentTitle("App Installed")
-            .setContentText("New app installed: $packageName")
+            .setContentText("New app installed: $appName")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setAutoCancel(true)
             .build()
