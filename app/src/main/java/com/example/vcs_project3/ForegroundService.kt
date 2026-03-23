@@ -34,7 +34,7 @@ class ForegroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("SERVICE_TEST", "ForegroundService running")
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     private fun createNotificationChannels() {
@@ -136,9 +136,8 @@ class ForegroundService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-
         unregisterReceiver(screenReceiver)
-
+        handler.removeCallbacksAndMessages(null)
         Log.d("SERVICE_TEST", "ForegroundService destroyed")
     }
 

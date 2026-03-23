@@ -16,115 +16,78 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 
 class ScreenReceiver : BroadcastReceiver() {
-
-    companion object {
-        private var messageView: TextView? = null
-    }
-
     override fun onReceive(context: Context, intent: Intent) {
-
         when (intent.action) {
-
             Intent.ACTION_SCREEN_ON -> {
                 Log.d("SCREEN_TEST", "Screen ON detected")
-                showMessage(context)
-            }
-
-            Intent.ACTION_USER_PRESENT -> {
-                Log.d("SCREEN_TEST", "User unlocked phone")
                 showMessage(context)
             }
         }
     }
 
     private fun showMessage(context: Context) {
-
         val windowManager =
             context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
-        val textView = TextView(context)
+        val messageTextView = TextView(context).apply {
+            text = context.getString(R.string.screen_message)
+            textSize = 16f
+            setTextColor(Color.WHITE)
+            setBackgroundResource(R.drawable.message_box)
+            setPadding(60, 40, 60, 40)
+            elevation = 12f
+            compoundDrawablePadding = 20
+        }
 
-        textView.text = "Screen has been turned ON"
-        textView.textSize = 16f
-        textView.setTextColor(Color.WHITE)
-
-        textView.setBackgroundResource(R.drawable.message_box)
-        textView.setPadding(60, 40, 60, 40)
-
-        textView.elevation = 12f
-        val icon = ContextCompat.getDrawable(context, R.drawable.ic_notifications)
-
-        icon?.let {
+        ContextCompat.getDrawable(context, R.drawable.ic_notifications)?.let {
             val wrapped = DrawableCompat.wrap(it)
             DrawableCompat.setTint(wrapped, Color.WHITE)
 
-            textView.setCompoundDrawablesWithIntrinsicBounds(
-                wrapped,
-                null,
-                null,
-                null
+            messageTextView.setCompoundDrawablesWithIntrinsicBounds(
+                wrapped, null, null, null
             )
         }
 
-        textView.compoundDrawablePadding = 20
-
-        messageView?.let {
-            try {
-                windowManager.removeView(it)
-            } catch (_: Exception) {}
-        }
-
-        messageView = textView
-
-        val layoutType =
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-
-        val params = WindowManager.LayoutParams(
+        val layoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
-            layoutType,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
-        )
+        ).apply {
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            y = 200
+        }
 
-        params.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-        params.y = 200
+        windowManager.addView(messageTextView, layoutParams)
 
-        windowManager.addView(textView, params)
+        messageTextView.alpha = 0f
+        messageTextView.translationY = 150f
 
-        textView.alpha = 0f
-        textView.translationY = 150f
-
-        textView.animate()
+        messageTextView.animate()
             .alpha(1f)
             .translationY(0f)
             .setDuration(250)
             .start()
 
         Handler(Looper.getMainLooper()).postDelayed({
-
             val slideDown =
-                ObjectAnimator.ofFloat(textView, "translationY", 0f, 200f)
+                ObjectAnimator.ofFloat(messageTextView, "translationY", 0f, 200f)
             slideDown.duration = 300
             slideDown.start()
 
-            textView.animate()
+            messageTextView.animate()
                 .alpha(0f)
                 .setDuration(300)
                 .start()
 
             Handler(Looper.getMainLooper()).postDelayed({
-
-                messageView?.let {
+                messageTextView.let {
                     try {
                         windowManager.removeView(it)
                     } catch (_: Exception) {}
                 }
-
-                messageView = null
-
             }, 300)
-
         }, 3000)
     }
 }

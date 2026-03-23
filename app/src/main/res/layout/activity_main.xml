@@ -7,7 +7,7 @@
     android:orientation="vertical">
 
     <TextView
-        android:text="VCS_project3 is running"
+        android:text="@string/app_running"
         android:textSize="24sp"
 	android:textColor="@color/purple_500"
 	android:textStyle="bold"

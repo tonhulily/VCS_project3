@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">VCS_project3</string>
+    <string name="screen_message">Screen has been turned ON</string>
+    <string name="app_running">VCS_project3 is running</string>
 </resources>
