@@ -5,21 +5,15 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 
 class ForegroundService : Service() {
 
     private lateinit var screenReceiver: ScreenReceiver
-
-    private val handler = Handler(Looper.getMainLooper())
-    private lateinit var packageManagerRef: PackageManager
-    private val installedPackages = HashSet<String>()
-    private val interval = 5000L
+    private lateinit var packageReceiver: PackageReceiver
+    private var packageReceiverRegistered = false
     private var receiverRegistered = false
 
     override fun onCreate() {
@@ -28,8 +22,7 @@ class ForegroundService : Service() {
         createNotificationChannels()
         startForegroundServiceNotification()
         registerScreenReceiver()
-        initInstalledApps()
-        startCheckingInstalledApps()
+        registerPackageReceiver()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -65,7 +58,6 @@ class ForegroundService : Service() {
 
         startForeground(1, notification)
     }
-
     private fun registerScreenReceiver() {
         screenReceiver = ScreenReceiver()
 
@@ -80,64 +72,25 @@ class ForegroundService : Service() {
 
         Log.d("SERVICE_TEST", "ScreenReceiver registered")
     }
+    private fun registerPackageReceiver() {
+        packageReceiver = PackageReceiver()
 
-    private fun initInstalledApps() {
-        packageManagerRef = packageManager
-
-        val apps = packageManagerRef.getInstalledApplications(0)
-
-        for (app in apps) {
-            installedPackages.add(app.packageName)
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addDataScheme("package")
         }
-    }
 
-    private fun startCheckingInstalledApps() {
-        handler.postDelayed(object : Runnable {
-
-            override fun run() {
-                val apps = packageManagerRef.getInstalledApplications(0)
-
-                val currentPackages = HashSet<String>()
-
-                for (app in apps) {
-                    currentPackages.add(app.packageName)
-                }
-
-                installedPackages.retainAll(currentPackages)
-                for (app in apps) {
-                    if (!installedPackages.contains(app.packageName)) {
-                        installedPackages.add(app.packageName)
-                        Log.d("INSTALL_TEST", "New app detected: ${app.packageName}")
-                        showInstallNotification(app.packageName)
-                    }
-                }
-
-                handler.postDelayed(this, interval)
-            }
-
-        }, interval)
-    }
-
-    private fun showInstallNotification(packageName: String) {
-        val manager =
-            getSystemService(NotificationManager::class.java)
-        val appInfo = packageManager.getApplicationInfo(packageName, 0)
-        val appName = packageManager.getApplicationLabel(appInfo).toString()
-
-        val notification = NotificationCompat.Builder(this, "install_channel")
-            .setContentTitle("App Installed")
-            .setContentText("New app installed: $appName")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setAutoCancel(true)
-            .build()
-
-        manager.notify(packageName.hashCode(), notification)
+        if (!packageReceiverRegistered) {
+            registerReceiver(packageReceiver, filter)
+            packageReceiverRegistered = true
+        }
+        Log.d("SERVICE_TEST", "PackageReceiver registered")
     }
 
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(screenReceiver)
-        handler.removeCallbacksAndMessages(null)
+        unregisterReceiver(packageReceiver)
         Log.d("SERVICE_TEST", "ForegroundService destroyed")
     }
 

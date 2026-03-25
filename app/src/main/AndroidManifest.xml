@@ -29,18 +29,6 @@
             android:foregroundServiceType="dataSync"
             tools:ignore="ForegroundServicePermission" />
 
-        <receiver
-            android:name=".InstallReceiver"
-            android:exported="true">
-
-            <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_ADDED"/>
-                <action android:name="android.intent.action.PACKAGE_REPLACED"/>
-                <action android:name="android.intent.action.PACKAGE_REMOVED"/>
-                <data android:scheme="package"/>
-            </intent-filter>
-
-        </receiver>
         <activity
             android:name=".MainActivity"
             android:exported="true"
