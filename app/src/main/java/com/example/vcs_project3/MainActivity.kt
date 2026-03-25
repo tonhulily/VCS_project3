@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import android.provider.Settings
+import androidx.core.net.toUri
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,6 +31,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        if (!Settings.canDrawOverlays(this)) {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                "package:$packageName".toUri()
+            )
+            startActivity(intent)
+        }
         val intent = Intent(this, ForegroundService::class.java)
         startForegroundService(intent)
     }
